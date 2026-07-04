@@ -84,7 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Kagoem Digital adalah software house profesional yang melayani pembuatan website, aplikasi web, aplikasi mobile Flutter, sistem informasi, ERP, CRM, POS, dan solusi digital menggunakan Laravel, Vue.js, PHP, MySQL, serta PostgreSQL.",
       },
       { name: "author", content: "Kagoem Digital" },
-      { property: "og:title", content: "Kagoem Digital | Software House & Digital Agency" },
+      { property: "og:title", content: "Kagoem Digital | Jasa Pembuatan Website, Aplikasi Web & Mobile" },
       {
         property: "og:description",
         content:
@@ -93,12 +93,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:url", content: "/" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Kagoem Digital | Software House & Digital Agency" },
+      { name: "twitter:title", content: "Kagoem Digital | Jasa Pembuatan Website, Aplikasi Web & Mobile" },
       {
         name: "twitter:description",
         content:
           "Website, aplikasi web & mobile, sistem informasi, ERP, CRM, POS dengan teknologi modern.",
       },
+      { name: "description", content: "Kagoem Digital adalah software house profesional yang melayani pembuatan website, aplikasi web, aplikasi mobile Flutter, sistem informasi, ERP, CRM, POS, dan solusi digital menggunakan Laravel, Vue.js, PHP, MySQL, serta PostgreSQL." },
+      { property: "og:description", content: "Kagoem Digital adalah software house profesional yang melayani pembuatan website, aplikasi web, aplikasi mobile Flutter, sistem informasi, ERP, CRM, POS, dan solusi digital menggunakan Laravel, Vue.js, PHP, MySQL, serta PostgreSQL." },
+      { name: "twitter:description", content: "Kagoem Digital adalah software house profesional yang melayani pembuatan website, aplikasi web, aplikasi mobile Flutter, sistem informasi, ERP, CRM, POS, dan solusi digital menggunakan Laravel, Vue.js, PHP, MySQL, serta PostgreSQL." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/680e4ee6-9c6a-497d-b2fe-93860e6813d7/id-preview-e7cee0fd--9a1e1b1d-aebd-4cc2-9118-d5ede2230cd1.lovable.app-1783146784183.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/680e4ee6-9c6a-497d-b2fe-93860e6813d7/id-preview-e7cee0fd--9a1e1b1d-aebd-4cc2-9118-d5ede2230cd1.lovable.app-1783146784183.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
