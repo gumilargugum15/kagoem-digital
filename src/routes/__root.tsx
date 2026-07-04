@@ -77,21 +77,38 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Kagoem Digital | Jasa Pembuatan Website, Aplikasi Web & Mobile" },
+      {
+        name: "description",
+        content:
+          "Kagoem Digital adalah software house profesional yang melayani pembuatan website, aplikasi web, aplikasi mobile Flutter, sistem informasi, ERP, CRM, POS, dan solusi digital menggunakan Laravel, Vue.js, PHP, MySQL, serta PostgreSQL.",
+      },
+      { name: "author", content: "Kagoem Digital" },
+      { property: "og:title", content: "Kagoem Digital | Software House & Digital Agency" },
+      {
+        property: "og:description",
+        content:
+          "Bangun website, aplikasi mobile, ERP, CRM, dan POS bersama Kagoem Digital — software house profesional dengan teknologi modern.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Kagoem Digital | Software House & Digital Agency" },
+      {
+        name: "twitter:description",
+        content:
+          "Website, aplikasi web & mobile, sistem informasi, ERP, CRM, POS dengan teknologi modern.",
+      },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
   shellComponent: RootShell,
