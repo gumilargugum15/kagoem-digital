@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             ServiceSeeder::class,
             PortfolioSeeder::class,
+            TechNoteSeeder::class,
             FaqSeeder::class,
             SiteSettingSeeder::class,
         ]);
