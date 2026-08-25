@@ -37,6 +37,26 @@ export interface Portfolio {
   sort_order: number;
 }
 
+export interface TechNote {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  excerpt: string;
+  content: string;
+  thumbnail: string | null;
+  tags: string[] | null;
+  author_name: string;
+  reading_time: number;
+  is_active: boolean;
+  published_at: string | null;
+}
+
+export interface TechNoteDetail {
+  article: TechNote;
+  related: TechNote[];
+}
+
 export interface Faq {
   id: number;
   question: string;
