@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Menu, X } from "lucide-react";
 
 import { LogoMark } from "@/components/logo-mark";
+import { CartIcon } from "@/components/cart-icon";
+import { CartDrawer } from "@/components/cart-drawer";
+import { getCart } from "@/services/cart";
 import type { SiteSettings } from "@/types/api";
 
 const NAV_LINKS = [
@@ -10,6 +14,7 @@ const NAV_LINKS = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
   { label: "Portfolio", href: "#portfolio" },
+  { label: "Products", to: "/products" },
   { label: "Tech Notes", to: "/tech-notes" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
@@ -17,9 +22,13 @@ const NAV_LINKS = [
 
 export function Nav({ settings }: { settings?: SiteSettings }) {
   const [open, setOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === "/";
+
+  const { data: cart } = useQuery({ queryKey: ["cart"], queryFn: getCart });
+  const cartCount = cart?.items_count ?? 0;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -90,13 +99,17 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
             </a>
           </div>
 
-          <button
-            aria-label="Toggle menu"
-            className="grid h-10 w-10 place-items-center rounded-xl bg-muted text-navy md:hidden"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <CartIcon count={cartCount} onClick={() => setCartOpen(true)} />
+
+            <button
+              aria-label="Toggle menu"
+              className="grid h-10 w-10 place-items-center rounded-xl bg-muted text-navy md:hidden"
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {open && (
@@ -114,6 +127,8 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
           </div>
         )}
       </div>
+
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
     </header>
   );
 }

@@ -4,13 +4,17 @@ use App\Http\Controllers\Api\V1\Admin\ContactMessageController as AdminContactMe
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Api\V1\Admin\PortfolioController as AdminPortfolioController;
+use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\V1\Admin\SiteSettingController as AdminSiteSettingController;
+use App\Http\Controllers\Api\V1\Admin\SubscriptionPlanController as AdminSubscriptionPlanController;
 use App\Http\Controllers\Api\V1\Admin\TechNoteController as AdminTechNoteController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\PortfolioController;
+use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\SiteSettingController;
 use App\Http\Controllers\Api\V1\StatsController;
@@ -27,6 +31,15 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/tech-notes', [TechNoteController::class, 'index']);
     Route::get('/tech-notes/{slug}', [TechNoteController::class, 'show']);
+
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{slug}', [ProductController::class, 'show']);
+
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/items', [CartController::class, 'store']);
+    Route::put('/cart/items/{item}', [CartController::class, 'update']);
+    Route::delete('/cart/items/{item}', [CartController::class, 'destroy']);
+    Route::delete('/cart', [CartController::class, 'clear']);
 
     Route::get('/faqs', [FaqController::class, 'index']);
     Route::get('/settings', [SiteSettingController::class, 'index']);
@@ -48,6 +61,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('portfolios', AdminPortfolioController::class);
         Route::apiResource('faqs', AdminFaqController::class);
         Route::apiResource('tech-notes', AdminTechNoteController::class);
+        Route::apiResource('products', AdminProductController::class);
+        Route::post('/products/{product}/plans', [AdminSubscriptionPlanController::class, 'store']);
+        Route::get('/products/{product}/plans', [AdminSubscriptionPlanController::class, 'index']);
+        Route::put('/products/{product}/plans/{plan}', [AdminSubscriptionPlanController::class, 'update']);
+        Route::delete('/products/{product}/plans/{plan}', [AdminSubscriptionPlanController::class, 'destroy']);
 
         Route::get('/contact-messages', [AdminContactMessageController::class, 'index']);
         Route::get('/contact-messages/{contactMessage}', [AdminContactMessageController::class, 'show']);

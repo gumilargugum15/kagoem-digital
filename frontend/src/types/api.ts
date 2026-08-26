@@ -65,6 +65,117 @@ export interface Faq {
   sort_order: number;
 }
 
+export type ProductType = "digital" | "subscription" | "service";
+export type ProductStatus = "draft" | "published" | "archived";
+export type BillingInterval = "monthly" | "yearly";
+export type ProductBadge = "new" | "best_seller" | "popular";
+
+export interface ProductFeature {
+  id: number;
+  product_id: number;
+  name: string;
+  description: string | null;
+  sort_order: number;
+}
+
+export interface ProductFaq {
+  question: string;
+  answer: string;
+}
+
+export interface SubscriptionPlanFeature {
+  id: number;
+  subscription_plan_id: number;
+  feature: string;
+  value: string | null;
+  sort_order: number;
+}
+
+export interface SubscriptionPlan {
+  id: number;
+  product_id: number;
+  name: string;
+  description: string | null;
+  price: string | null;
+  billing_interval: BillingInterval;
+  max_users: number | null;
+  max_branches: number | null;
+  max_products: number | null;
+  cta_label: string | null;
+  is_highlighted: boolean;
+  status: ProductStatus;
+  sort_order: number;
+  plan_features?: SubscriptionPlanFeature[];
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  type: ProductType;
+  category: string;
+  short_description: string;
+  description: string | null;
+  thumbnail: string | null;
+  gallery: string[] | null;
+  tags: string[] | null;
+  badge: ProductBadge | null;
+  price: string | null;
+  discount_price: string | null;
+  currency: string;
+  rating: string | null;
+  purchases_count: number;
+  demo_url: string | null;
+  download_url: string | null;
+  has_digital_file: boolean;
+  whats_included: string[] | null;
+  requirements: string[] | null;
+  technology: string[] | null;
+  faqs: ProductFaq[] | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image: string | null;
+  sort_order: number;
+  status: ProductStatus;
+  published_at: string | null;
+  features?: ProductFeature[];
+  plans?: SubscriptionPlan[];
+  plans_count?: number;
+}
+
+export interface ProductDetail {
+  product: Product;
+  related: Product[];
+}
+
+export interface CartItem {
+  id: number;
+  cart_id: number;
+  product_id: number;
+  subscription_plan_id: number | null;
+  product_name: string;
+  product_type: ProductType;
+  price: string;
+  quantity: number;
+  billing_interval: BillingInterval | null;
+  subtotal: string;
+  product?: { id: number; name: string; slug: string; thumbnail: string | null; type: ProductType };
+  subscription_plan?: { id: number; name: string } | null;
+}
+
+export interface Cart {
+  id: number;
+  user_id: number | null;
+  session_id: string | null;
+  currency: string;
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  items_count: number;
+  items: CartItem[];
+}
+
 export type SiteSettings = Record<string, string>;
 
 export interface ContactPayload {
