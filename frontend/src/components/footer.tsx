@@ -9,6 +9,7 @@ const MENU_LINKS = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
   { label: "Portfolio", href: "#portfolio" },
+  { label: "Products", href: "/products", isRoute: true },
   { label: "Tech Notes", href: "/tech-notes", isRoute: true },
   { label: "Contact", href: "#contact" },
 ] as const;

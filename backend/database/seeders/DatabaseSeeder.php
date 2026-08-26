@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             PortfolioSeeder::class,
             TechNoteSeeder::class,
+            ProductSeeder::class,
             FaqSeeder::class,
             SiteSettingSeeder::class,
         ]);
