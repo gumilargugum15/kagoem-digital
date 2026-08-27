@@ -114,15 +114,24 @@ Base URL: `http://localhost:8000/api/v1`
 | GET | `/stats` | Statistik jumlah project & client (untuk hero section) |
 | POST | `/contact` | Kirim pesan dari form kontak |
 
-**Auth**
+**Auth** — satu sistem akun (`users`) untuk admin maupun customer, dibedakan lewat kolom `role`.
 
 | Method | Endpoint | Keterangan |
 | --- | --- | --- |
-| POST | `/auth/login` | Login admin (Sanctum token) |
+| POST | `/auth/register` | Registrasi akun customer baru, langsung dapat token |
+| POST | `/auth/login` | Login (admin maupun customer), dapat Sanctum token |
 | POST | `/auth/logout` | Logout (butuh token) |
-| GET | `/auth/me` | Info admin yang sedang login (butuh token) |
+| GET | `/auth/me` | Info user yang sedang login (butuh token) |
+| PUT | `/auth/profile` | Update nama/email (butuh token; ganti email reset status verifikasi) |
+| PUT | `/auth/profile/password` | Ganti password (butuh token + `current_password`) |
+| POST | `/auth/forgot-password` | Kirim link reset password ke email |
+| POST | `/auth/reset-password` | Set password baru dari link reset |
+| GET | `/auth/email/verify/{id}/{hash}` | Link verifikasi email (signed URL, diklik dari email), redirect ke `FRONTEND_URL/email-verified` |
+| POST | `/auth/email/resend` | Kirim ulang email verifikasi (butuh token) |
 
-**Admin** (semua butuh header `Authorization: Bearer <token>`)
+Halaman frontend terkait: `/register`, `/login`, `/forgot-password`, `/reset-password`, `/email-verified`, `/account` (protected).
+
+**Admin** (semua butuh header `Authorization: Bearer <token>` dari user dengan `role=admin`)
 
 | Method | Endpoint |
 | --- | --- |

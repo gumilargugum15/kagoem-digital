@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { LogoMark } from "@/components/logo-mark";
 
 export default function AdminLogin() {
-  const { user, isLoading, login } = useAuth();
+  const { user, isLoading, login, logout } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +18,7 @@ export default function AdminLogin() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && user?.role === "admin") {
       navigate("/admin");
     }
   }, [isLoading, user, navigate]);
@@ -28,7 +28,12 @@ export default function AdminLogin() {
     setError(null);
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      const loggedInUser = await login(email, password);
+      if (loggedInUser.role !== "admin") {
+        await logout();
+        setError("Akun ini tidak memiliki akses admin.");
+        return;
+      }
       toast.success("Login berhasil");
       navigate("/admin");
     } catch (err) {
@@ -39,7 +44,7 @@ export default function AdminLogin() {
     }
   };
 
-  if (isLoading || user) {
+  if (isLoading || user?.role === "admin") {
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-surface">
         <div className="pointer-events-none absolute inset-0 gradient-hero-bg" aria-hidden />
