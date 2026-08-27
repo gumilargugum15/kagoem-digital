@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Admin\TechNoteController as AdminTechNoteControl
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
+use App\Http\Controllers\Api\V1\EmailVerificationController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\PortfolioController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -47,14 +48,24 @@ Route::prefix('v1')->group(function () {
     Route::post('/contact', [ContactMessageController::class, 'store']);
 
     // Auth
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1');
+    Route::get('/auth/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware('signed')
+        ->name('verification.verify');
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
+        Route::put('/auth/profile/password', [AuthController::class, 'updatePassword']);
+        Route::post('/auth/email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:6,1');
     });
 
     // Admin (protected)
-    Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
         Route::apiResource('services', AdminServiceController::class);

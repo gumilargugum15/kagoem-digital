@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, User, X } from "lucide-react";
 
 import { LogoMark } from "@/components/logo-mark";
 import { CartIcon } from "@/components/cart-icon";
 import { CartDrawer } from "@/components/cart-drawer";
 import { getCart } from "@/services/cart";
+import { useAuth } from "@/hooks/use-auth";
 import type { SiteSettings } from "@/types/api";
 
 const NAV_LINKS = [
@@ -29,6 +30,7 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
 
   const { data: cart } = useQuery({ queryKey: ["cart"], queryFn: getCart });
   const cartCount = cart?.items_count ?? 0;
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -100,6 +102,14 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
           </div>
 
           <div className="flex items-center gap-1">
+            <Link
+              to={user ? "/account" : "/login"}
+              aria-label={user ? "Akun Saya" : "Masuk"}
+              className="grid h-10 w-10 place-items-center rounded-xl text-navy transition-transform hover:scale-105"
+            >
+              <User className="h-5 w-5" />
+            </Link>
+
             <CartIcon count={cartCount} onClick={() => setCartOpen(true)} />
 
             <button
@@ -116,6 +126,13 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
           <div className="glass mt-2 animate-fade-up rounded-2xl p-3 shadow-elegant md:hidden">
             <div className="flex flex-col">
               {NAV_LINKS.map((link) => renderLink(link, mobileLinkClass, () => setOpen(false)))}
+              <Link
+                to={user ? "/account" : "/login"}
+                onClick={() => setOpen(false)}
+                className={mobileLinkClass}
+              >
+                {user ? "Akun Saya" : "Masuk"}
+              </Link>
               <a
                 href={isHome ? "#contact" : "/#contact"}
                 onClick={() => setOpen(false)}

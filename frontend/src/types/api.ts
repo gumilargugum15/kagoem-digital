@@ -193,10 +193,17 @@ export interface ContactMessage extends ContactPayload {
   created_at: string;
 }
 
+export type UserRole = "admin" | "customer";
+export type UserStatus = "active" | "inactive" | "suspended";
+
 export interface User {
   id: number;
   name: string;
   email: string;
+  email_verified_at: string | null;
+  role: UserRole;
+  status: UserStatus;
+  created_at?: string;
 }
 
 export interface PaginatedData<T> {

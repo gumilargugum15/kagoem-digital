@@ -32,12 +32,12 @@ export function AdminLayout({ children, title }: { children: ReactNode; title: s
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && (!user || user.role !== "admin")) {
       navigate("/admin/login");
     }
   }, [isLoading, user, navigate]);
 
-  if (isLoading || !user) {
+  if (isLoading || !user || user.role !== "admin") {
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-surface">
         <div className="pointer-events-none absolute inset-0 gradient-hero-bg" aria-hidden />

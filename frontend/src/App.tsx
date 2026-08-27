@@ -5,6 +5,13 @@ import TechNoteDetail from "@/pages/TechNoteDetail";
 import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import Cart from "@/pages/Cart";
+import Register from "@/pages/Register";
+import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
+import Account from "@/pages/Account";
+import { ProtectedRoute } from "@/components/protected-route";
 import NotFound from "@/pages/NotFound";
 import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -26,6 +33,19 @@ export function App() {
       <Route path="/products" element={<Products />} />
       <Route path="/products/:slug" element={<ProductDetail />} />
       <Route path="/cart" element={<Cart />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/email-verified" element={<VerifyEmail />} />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute>
+            <Account />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/admin/services" element={<AdminServices />} />
