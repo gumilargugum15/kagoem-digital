@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -65,6 +66,16 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => 'Resource not found',
                     'errors' => null,
                 ], 404);
+            }
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Request failed',
+                    'errors' => null,
+                ], $e->getStatusCode(), $e->getHeaders());
             }
         });
 
