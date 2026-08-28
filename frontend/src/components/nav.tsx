@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Menu, User, X } from "lucide-react";
+import { ArrowRight, Menu, Package, User, X } from "lucide-react";
 
 import { LogoMark } from "@/components/logo-mark";
 import { CartIcon } from "@/components/cart-icon";
@@ -102,6 +102,16 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
           </div>
 
           <div className="flex items-center gap-1">
+            {user && (
+              <Link
+                to="/orders"
+                aria-label="Pesanan Saya"
+                className="grid h-10 w-10 place-items-center rounded-xl text-navy transition-transform hover:scale-105"
+              >
+                <Package className="h-5 w-5" />
+              </Link>
+            )}
+
             <Link
               to={user ? "/account" : "/login"}
               aria-label={user ? "Akun Saya" : "Masuk"}
@@ -126,6 +136,11 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
           <div className="glass mt-2 animate-fade-up rounded-2xl p-3 shadow-elegant md:hidden">
             <div className="flex flex-col">
               {NAV_LINKS.map((link) => renderLink(link, mobileLinkClass, () => setOpen(false)))}
+              {user && (
+                <Link to="/orders" onClick={() => setOpen(false)} className={mobileLinkClass}>
+                  Pesanan Saya
+                </Link>
+              )}
               <Link
                 to={user ? "/account" : "/login"}
                 onClick={() => setOpen(false)}

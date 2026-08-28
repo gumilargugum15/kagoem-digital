@@ -1,29 +1,16 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { getOrder } from "@/services/orders";
 import { getSettings } from "@/services/settings";
 import { formatCurrency } from "@/lib/utils";
+import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/order-status";
 import { Badge } from "@/components/ui/badge";
-
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: "Menunggu Pembayaran",
-  paid: "Dibayar",
-  failed: "Gagal",
-  cancelled: "Dibatalkan",
-  expired: "Kedaluwarsa",
-};
-
-const PAYMENT_STATUS_LABEL: Record<string, string> = {
-  pending: "Menunggu Pembayaran",
-  paid: "Dibayar",
-  failed: "Gagal",
-  expired: "Kedaluwarsa",
-  refunded: "Dikembalikan",
-};
+import { Button } from "@/components/ui/button";
 
 export default function OrderDetail() {
   const { orderNumber = "" } = useParams<{ orderNumber: string }>();
@@ -107,6 +94,12 @@ export default function OrderDetail() {
                     <span className="text-navy">-{formatCurrency(order.discount)}</span>
                   </div>
                 )}
+                {Number(order.tax) > 0 && (
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Tax</span>
+                    <span className="text-navy">{formatCurrency(order.tax)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-t border-border pt-2 text-base font-bold text-navy">
                   <span>Total</span>
                   <span>{formatCurrency(order.total)}</span>
@@ -127,6 +120,18 @@ export default function OrderDetail() {
                   </p>
                 </div>
               </div>
+
+              {order.status === "pending" && (
+                <Button
+                  type="button"
+                  className="mt-6 w-full py-5"
+                  onClick={() =>
+                    toast.info("Payment Gateway belum tersedia. Silakan cek kembali nanti.")
+                  }
+                >
+                  Bayar Sekarang
+                </Button>
+              )}
             </div>
           )}
         </div>
