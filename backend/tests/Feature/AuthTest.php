@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
@@ -33,7 +33,7 @@ class AuthTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'andi@example.com', 'role' => 'customer']);
 
         $user = User::where('email', 'andi@example.com')->first();
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 
     public function test_registration_requires_matching_password_confirmation(): void
@@ -153,7 +153,7 @@ class AuthTest extends TestCase
 
         $response->assertOk();
         $this->assertDatabaseHas('users', ['id' => $user->id, 'email_verified_at' => null]);
-        Notification::assertSentTo($user->fresh(), VerifyEmail::class);
+        Notification::assertSentTo($user->fresh(), VerifyEmailNotification::class);
     }
 
     public function test_user_can_update_password_with_correct_current_password(): void
@@ -196,7 +196,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email]);
 
         $response->assertOk();
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
     }
 
     public function test_forgot_password_does_not_leak_unknown_email(): void
@@ -280,7 +280,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/v1/auth/email/resend', [], $this->authHeaders($user));
 
         $response->assertOk();
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     }
 
     public function test_customer_cannot_access_admin_routes(): void

@@ -51,7 +51,7 @@ DB_DATABASE=kagoem_digital
 DB_USERNAME=kagoem
 DB_PASSWORD=kagoem_secret
 
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:5173
 ```
 
 ### Migration & Seeder
