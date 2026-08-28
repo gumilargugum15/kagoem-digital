@@ -9,6 +9,7 @@ import Checkout from "@/pages/Checkout";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import Orders from "@/pages/Orders";
 import OrderDetail from "@/pages/OrderDetail";
+import MyProducts from "@/pages/MyProducts";
 import Register from "@/pages/Register";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
@@ -68,6 +69,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <OrderDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-products"
+        element={
+          <ProtectedRoute>
+            <MyProducts />
           </ProtectedRoute>
         }
       />

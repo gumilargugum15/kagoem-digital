@@ -130,6 +130,22 @@ export default function OrderDetail() {
                           : ""}{" "}
                         &middot; Qty {item.quantity}
                       </p>
+                      {item.subscription && (
+                        <p className="mt-1 text-xs font-medium text-primary">
+                          Subscription:{" "}
+                          {item.subscription.status === "active"
+                            ? "ACTIVE"
+                            : item.subscription.status.toUpperCase()}
+                        </p>
+                      )}
+                      {item.digital_access && (
+                        <p className="mt-1 text-xs font-medium text-primary">
+                          Digital Access:{" "}
+                          {item.digital_access.status === "active"
+                            ? "ACTIVE"
+                            : item.digital_access.status.toUpperCase()}
+                        </p>
+                      )}
                     </div>
                     <p className="font-semibold text-navy">{formatCurrency(item.subtotal)}</p>
                   </div>

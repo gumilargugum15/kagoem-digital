@@ -207,7 +207,44 @@ export interface User {
 }
 
 export type OrderStatus = "pending" | "paid" | "failed" | "cancelled" | "expired";
-export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded";
+export type PaymentStatus = "pending" | "paid" | "failed" | "cancelled" | "expired" | "refunded";
+
+export type SubscriptionStatus = "pending" | "active" | "expired" | "cancelled";
+export type DigitalAccessStatus = "active" | "revoked";
+
+export interface Subscription {
+  id: number;
+  user_id: number;
+  product_id: number | null;
+  subscription_plan_id: number | null;
+  order_id: number;
+  order_item_id: number;
+  status: SubscriptionStatus;
+  started_at: string | null;
+  expires_at: string | null;
+  product?: { id: number; name: string; slug: string; thumbnail: string | null; type: ProductType };
+}
+
+export interface DigitalProductAccess {
+  id: number;
+  user_id: number;
+  product_id: number | null;
+  order_id: number;
+  order_item_id: number;
+  status: DigitalAccessStatus;
+  granted_at: string | null;
+  expires_at: string | null;
+  download_count: number;
+  product?: {
+    id: number;
+    name: string;
+    slug: string;
+    thumbnail: string | null;
+    type: ProductType;
+    has_digital_file: boolean;
+    download_url: string | null;
+  };
+}
 
 export interface OrderItem {
   id: number;
@@ -220,6 +257,8 @@ export interface OrderItem {
   quantity: number;
   unit_price: string;
   subtotal: string;
+  subscription?: Subscription | null;
+  digital_access?: DigitalProductAccess | null;
 }
 
 export interface Payment {
@@ -251,6 +290,11 @@ export interface Order {
   items: OrderItem[];
   payment: Payment | null;
   user?: { id: number; name: string; email: string };
+}
+
+export interface MyProducts {
+  subscriptions: Subscription[];
+  digital: DigitalProductAccess[];
 }
 
 export interface PaginatedData<T> {

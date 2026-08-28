@@ -141,6 +141,11 @@ export function Nav({ settings }: { settings?: SiteSettings }) {
                   Pesanan Saya
                 </Link>
               )}
+              {user && (
+                <Link to="/my-products" onClick={() => setOpen(false)} className={mobileLinkClass}>
+                  Produk Saya
+                </Link>
+              )}
               <Link
                 to={user ? "/account" : "/login"}
                 onClick={() => setOpen(false)}
