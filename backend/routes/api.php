@@ -16,7 +16,9 @@ use App\Http\Controllers\Api\V1\CheckoutController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
 use App\Http\Controllers\Api\V1\EmailVerificationController;
 use App\Http\Controllers\Api\V1\FaqController;
+use App\Http\Controllers\Api\V1\MidtransNotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PortfolioController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ServiceController;
@@ -50,6 +52,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/stats', [StatsController::class, 'index']);
     Route::post('/contact', [ContactMessageController::class, 'store']);
 
+    Route::post('/payment/midtrans/notification', MidtransNotificationController::class);
+
     // Auth
     Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
@@ -70,6 +74,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/orders', [OrderController::class, 'index']);
         Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
+        Route::post('/orders/{orderNumber}/payment', [PaymentController::class, 'store'])->middleware('throttle:10,1');
     });
 
     // Admin (protected)

@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import { getOrder } from "@/services/orders";
+import { getOrder, createPayment } from "@/services/orders";
 import { getSettings } from "@/services/settings";
+import { ApiClientError } from "@/services/api";
+import { payWithSnap } from "@/lib/midtrans";
 import { formatCurrency } from "@/lib/utils";
 import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/order-status";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +18,8 @@ import { Button } from "@/components/ui/button";
 export default function OrderDetail() {
   const { orderNumber = "" } = useParams<{ orderNumber: string }>();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
+  const queryClient = useQueryClient();
+  const [isPaying, setIsPaying] = useState(false);
 
   const {
     data: order,
@@ -25,6 +30,54 @@ export default function OrderDetail() {
     queryFn: () => getOrder(orderNumber),
     enabled: Boolean(orderNumber),
   });
+
+  const refreshOrder = () => queryClient.invalidateQueries({ queryKey: ["orders", orderNumber] });
+
+  const paymentMutation = useMutation({
+    mutationFn: () => createPayment(orderNumber),
+    onSuccess: async ({ snap_token }) => {
+      try {
+        await payWithSnap(snap_token, {
+          onSuccess: () => {
+            setIsPaying(false);
+            toast.success("Pembayaran diterima. Memuat status terbaru...");
+            void refreshOrder();
+          },
+          onPending: () => {
+            setIsPaying(false);
+            toast.info("Menunggu pembayaran Anda diselesaikan.");
+            void refreshOrder();
+          },
+          onError: () => {
+            setIsPaying(false);
+            toast.error("Pembayaran gagal. Silakan coba lagi.");
+            void refreshOrder();
+          },
+          onClose: () => {
+            setIsPaying(false);
+            void refreshOrder();
+          },
+        });
+      } catch {
+        setIsPaying(false);
+        toast.error("Pembayaran belum dapat diproses. Silakan coba lagi.");
+      }
+    },
+    onError: (e: unknown) => {
+      setIsPaying(false);
+      toast.error(
+        e instanceof ApiClientError
+          ? e.message
+          : "Pembayaran belum dapat diproses. Silakan coba lagi.",
+      );
+    },
+  });
+
+  const handlePay = () => {
+    if (isPaying) return;
+    setIsPaying(true);
+    paymentMutation.mutate();
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -125,10 +178,10 @@ export default function OrderDetail() {
                 <Button
                   type="button"
                   className="mt-6 w-full py-5"
-                  onClick={() =>
-                    toast.info("Payment Gateway belum tersedia. Silakan cek kembali nanti.")
-                  }
+                  disabled={isPaying}
+                  onClick={handlePay}
                 >
+                  {isPaying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   Bayar Sekarang
                 </Button>
               )}
