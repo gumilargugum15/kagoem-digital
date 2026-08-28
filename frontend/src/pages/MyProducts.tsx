@@ -1,27 +1,30 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Download, Loader2, Package, ShoppingBag } from "lucide-react";
+import { AlertCircle, Download, Loader2, Package, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { getMyProducts, downloadDigitalProduct } from "@/services/my-products";
 import { getSettings } from "@/services/settings";
-import { ApiClientError } from "@/services/api";
+import { ApiClientError, getStorageUrl } from "@/services/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const SUBSCRIPTION_STATUS_LABEL: Record<string, string> = {
   pending: "Menunggu Aktivasi",
-  active: "Aktif",
-  expired: "Kedaluwarsa",
-  cancelled: "Dibatalkan",
+  active: "Active",
+  expired: "Expired",
+  cancelled: "Cancelled",
 };
 
 export default function MyProducts() {
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
-  const { data, isLoading } = useQuery({ queryKey: ["my-products"], queryFn: getMyProducts });
+  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
+    queryKey: ["my-products"],
+    queryFn: getMyProducts,
+  });
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
   const subscriptions = data?.subscriptions ?? [];
@@ -51,7 +54,21 @@ export default function MyProducts() {
 
           {isLoading ? (
             <div className="mt-16 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Memuat...
+              <Loader2 className="h-4 w-4 animate-spin" /> Memuat Produk...
+            </div>
+          ) : isError ? (
+            <div className="mt-16 flex flex-col items-center gap-4 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <p className="text-sm text-muted-foreground">Gagal memuat produk.</p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => refetch()}
+                disabled={isRefetching}
+              >
+                {isRefetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Coba Lagi
+              </Button>
             </div>
           ) : isEmpty ? (
             <div className="mt-16 flex flex-col items-center gap-4 text-center">
@@ -70,50 +87,52 @@ export default function MyProducts() {
                   <h2 className="font-display text-lg font-bold text-navy">Subscription</h2>
                   <div className="mt-4 space-y-3">
                     {subscriptions.map((sub) => {
-                      const content = (
-                        <>
-                          <div>
-                            <p className="font-semibold text-navy">{sub.product?.name}</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {sub.started_at && (
-                                <>
-                                  Mulai {new Date(sub.started_at).toLocaleDateString("id-ID")}
-                                  {sub.expires_at &&
-                                    ` · Berakhir ${new Date(sub.expires_at).toLocaleDateString("id-ID")}`}
-                                </>
-                              )}
-                            </p>
+                      const thumbnail = getStorageUrl(sub.product?.thumbnail);
+                      const isExpired = sub.status === "expired";
+
+                      return (
+                        <div
+                          key={sub.id}
+                          className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            {thumbnail ? (
+                              <img
+                                src={thumbnail}
+                                alt={sub.product?.name}
+                                className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                              />
+                            ) : (
+                              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10">
+                                <Package className="h-5 w-5 text-primary" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-navy">{sub.product?.name}</p>
+                              <p className="text-xs text-muted-foreground">Subscription</p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {isExpired ? "Expired" : "Berakhir"}:{" "}
+                                {sub.expires_at
+                                  ? new Date(sub.expires_at).toLocaleDateString("id-ID", {
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                    })
+                                  : "-"}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <Badge variant={sub.status === "active" ? "default" : "secondary"}>
                               {SUBSCRIPTION_STATUS_LABEL[sub.status]}
                             </Badge>
                             {sub.product?.slug && (
-                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              <Button type="button" variant="outline" size="sm" asChild>
+                                <Link to={`/products/${sub.product.slug}`}>Detail</Link>
+                              </Button>
                             )}
                           </div>
-                        </>
-                      );
-
-                      if (!sub.product?.slug) {
-                        return (
-                          <div
-                            key={sub.id}
-                            className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
-                          >
-                            {content}
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <Link
-                          key={sub.id}
-                          to={`/products/${sub.product.slug}`}
-                          className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-soft transition-shadow hover:shadow-elegant sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          {content}
-                        </Link>
+                        </div>
                       );
                     })}
                   </div>
@@ -122,40 +141,61 @@ export default function MyProducts() {
 
               {digital.length > 0 && (
                 <div>
-                  <h2 className="font-display text-lg font-bold text-navy">Produk Digital</h2>
+                  <h2 className="font-display text-lg font-bold text-navy">Digital Products</h2>
                   <div className="mt-4 space-y-3">
-                    {digital.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10">
-                            <Package className="h-5 w-5 text-primary" />
+                    {digital.map((item) => {
+                      const thumbnail = getStorageUrl(item.product?.thumbnail);
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            {thumbnail ? (
+                              <img
+                                src={thumbnail}
+                                alt={item.product?.name}
+                                className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                              />
+                            ) : (
+                              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10">
+                                <Package className="h-5 w-5 text-primary" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-navy">{item.product?.name}</p>
+                              <p className="text-xs text-muted-foreground">Digital Product</p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {item.download_count > 0
+                                  ? `Diunduh ${item.download_count}x`
+                                  : "Belum diunduh"}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-navy">{item.product?.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.download_count > 0
-                                ? `Diunduh ${item.download_count}x`
-                                : "Belum diunduh"}
-                            </p>
+                          <div className="flex items-center gap-3">
+                            <Badge variant={item.status === "active" ? "default" : "secondary"}>
+                              {item.status === "active" ? "Owned" : "Revoked"}
+                            </Badge>
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={downloadingId === item.id || item.status !== "active"}
+                              onClick={() =>
+                                handleDownload(item.id, item.product?.name ?? "download")
+                              }
+                            >
+                              {downloadingId === item.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                              Download
+                            </Button>
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          disabled={downloadingId === item.id || item.status !== "active"}
-                          onClick={() => handleDownload(item.id, item.product?.name ?? "download")}
-                        >
-                          {downloadingId === item.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Download className="h-4 w-4" />
-                          )}
-                          Download
-                        </Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
