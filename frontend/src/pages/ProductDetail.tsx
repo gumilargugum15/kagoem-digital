@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -69,11 +69,13 @@ function groupPlansByName(plans: SubscriptionPlan[]) {
 
 export default function ProductDetail() {
   const { slug = "" } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
   const queryClient = useQueryClient();
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
+  const [buyNow, setBuyNow] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["products", slug],
@@ -85,6 +87,10 @@ export default function ProductDetail() {
     mutationFn: addCartItem,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      if (buyNow) {
+        navigate("/checkout");
+        return;
+      }
       const name = data?.product.name ?? "Produk";
       toast.success(`${name} berhasil ditambahkan ke keranjang.`);
     },
@@ -92,18 +98,20 @@ export default function ProductDetail() {
       toast.error(e instanceof ApiClientError ? e.message : "Gagal menambahkan ke keranjang"),
   });
 
-  const handleAddDigitalToCart = () => {
+  const handleAddDigitalToCart = (options: { buyNow?: boolean } = {}) => {
     if (!data) return;
+    setBuyNow(Boolean(options.buyNow));
     addToCartMutation.mutate({ product_id: data.product.id, quantity: 1 });
   };
 
-  const handleAddSubscriptionToCart = () => {
+  const handleAddSubscriptionToCart = (options: { buyNow?: boolean } = {}) => {
     if (!selectedPlanId) {
       setPlanError("Silakan pilih paket terlebih dahulu.");
       return;
     }
     if (!data) return;
     setPlanError(null);
+    setBuyNow(Boolean(options.buyNow));
     addToCartMutation.mutate({
       product_id: data.product.id,
       subscription_plan_id: selectedPlanId,
@@ -357,20 +365,30 @@ export default function ProductDetail() {
                     {planError && (
                       <p className="text-sm font-medium text-destructive">{planError}</p>
                     )}
-                    <Button
-                      type="button"
-                      onClick={handleAddSubscriptionToCart}
-                      disabled={addToCartMutation.isPending}
-                      className="w-full max-w-xs py-5 sm:w-auto sm:px-10"
-                    >
-                      {addToCartMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <Button
+                        type="button"
+                        onClick={() => handleAddSubscriptionToCart({ buyNow: true })}
+                        disabled={addToCartMutation.isPending}
+                        className="w-full max-w-xs py-5 sm:w-auto sm:px-10"
+                      >
+                        {addToCartMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : null}
+                        Beli Sekarang
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleAddSubscriptionToCart()}
+                        disabled={addToCartMutation.isPending}
+                        className="w-full max-w-xs py-5 sm:w-auto sm:px-10"
+                      >
                         <ShoppingCart className="h-4 w-4" />
-                      )}
-                      Add to Cart
-                    </Button>
-                    {addToCartMutation.isSuccess && (
+                        Add to Cart
+                      </Button>
+                    </div>
+                    {addToCartMutation.isSuccess && !buyNow && (
                       <Link
                         to="/cart"
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:translate-x-0.5"
@@ -402,15 +420,23 @@ export default function ProductDetail() {
                   <div className="flex flex-wrap items-center gap-3">
                     <Button
                       type="button"
-                      onClick={handleAddDigitalToCart}
+                      onClick={() => handleAddDigitalToCart({ buyNow: true })}
                       disabled={addToCartMutation.isPending}
                       className="px-6 py-5"
                     >
                       {addToCartMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ShoppingCart className="h-4 w-4" />
-                      )}
+                      ) : null}
+                      Beli Sekarang
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleAddDigitalToCart()}
+                      disabled={addToCartMutation.isPending}
+                      className="px-6 py-5"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
                       Add to Cart
                     </Button>
                     {product.download_url && (
@@ -423,7 +449,7 @@ export default function ProductDetail() {
                         <Download className="h-4 w-4" /> Preview
                       </a>
                     )}
-                    {addToCartMutation.isSuccess && (
+                    {addToCartMutation.isSuccess && !buyNow && (
                       <Link
                         to="/cart"
                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:translate-x-0.5"

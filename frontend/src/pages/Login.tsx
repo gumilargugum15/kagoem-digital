@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, type Location } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: Location })?.from;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +28,7 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success("Login berhasil");
-      navigate("/account");
+      navigate(from ? `${from.pathname}${from.search}` : "/account");
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Login gagal. Silakan coba lagi.");
     } finally {
