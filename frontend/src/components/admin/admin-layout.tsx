@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Loader2,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { to: "/admin/portfolio", label: "Portfolio", icon: ImageIcon, end: false },
   { to: "/admin/tech-notes", label: "Tech Notes", icon: Newspaper, end: false },
   { to: "/admin/products", label: "Products", icon: Package, end: false },
+  { to: "/admin/orders", label: "Orders", icon: ShoppingBag, end: false },
   { to: "/admin/faq", label: "FAQ", icon: HelpCircle, end: false },
   { to: "/admin/messages", label: "Messages", icon: Mail, end: false },
   { to: "/admin/settings", label: "Settings", icon: Settings, end: false },

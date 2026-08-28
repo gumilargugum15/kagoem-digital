@@ -206,6 +206,53 @@ export interface User {
   created_at?: string;
 }
 
+export type OrderStatus = "pending" | "paid" | "failed" | "cancelled" | "expired";
+export type PaymentStatus = "pending" | "paid" | "failed" | "expired" | "refunded";
+
+export interface OrderItem {
+  id: number;
+  order_id: number;
+  product_id: number | null;
+  subscription_plan_id: number | null;
+  product_name: string;
+  product_type: ProductType;
+  billing_interval: BillingInterval | null;
+  quantity: number;
+  unit_price: string;
+  subtotal: string;
+}
+
+export interface Payment {
+  id: number;
+  order_id: number;
+  provider: string | null;
+  payment_method: string | null;
+  transaction_id: string | null;
+  amount: string;
+  currency: string;
+  status: PaymentStatus;
+  paid_at: string | null;
+}
+
+export interface Order {
+  id: number;
+  user_id: number;
+  order_number: string;
+  status: OrderStatus;
+  currency: string;
+  subtotal: string;
+  discount: string;
+  tax: string;
+  total: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string | null;
+  created_at: string;
+  items: OrderItem[];
+  payment: Payment | null;
+  user?: { id: number; name: string; email: string };
+}
+
 export interface PaginatedData<T> {
   data: T[];
   current_page: number;

@@ -5,6 +5,10 @@ import TechNoteDetail from "@/pages/TechNoteDetail";
 import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import Orders from "@/pages/Orders";
+import OrderDetail from "@/pages/OrderDetail";
 import Register from "@/pages/Register";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
@@ -23,6 +27,8 @@ import AdminProductPlans from "@/pages/admin/ProductPlans";
 import AdminFaq from "@/pages/admin/Faq";
 import AdminMessages from "@/pages/admin/Messages";
 import AdminSettings from "@/pages/admin/Settings";
+import AdminOrders from "@/pages/admin/Orders";
+import AdminOrderDetail from "@/pages/admin/OrderDetail";
 
 export function App() {
   return (
@@ -33,6 +39,38 @@ export function App() {
       <Route path="/products" element={<Products />} />
       <Route path="/products/:slug" element={<ProductDetail />} />
       <Route path="/cart" element={<Cart />} />
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/checkout/success"
+        element={
+          <ProtectedRoute>
+            <CheckoutSuccess />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders/:orderNumber"
+        element={
+          <ProtectedRoute>
+            <OrderDetail />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -56,6 +94,8 @@ export function App() {
       <Route path="/admin/faq" element={<AdminFaq />} />
       <Route path="/admin/messages" element={<AdminMessages />} />
       <Route path="/admin/settings" element={<AdminSettings />} />
+      <Route path="/admin/orders" element={<AdminOrders />} />
+      <Route path="/admin/orders/:orderNumber" element={<AdminOrderDetail />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

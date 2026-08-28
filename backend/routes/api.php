@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\PortfolioController as AdminPortfolioController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\ServiceController as AdminServiceController;
@@ -11,9 +12,11 @@ use App\Http\Controllers\Api\V1\Admin\SubscriptionPlanController as AdminSubscri
 use App\Http\Controllers\Api\V1\Admin\TechNoteController as AdminTechNoteController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CartController;
+use App\Http\Controllers\Api\V1\CheckoutController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
 use App\Http\Controllers\Api\V1\EmailVerificationController;
 use App\Http\Controllers\Api\V1\FaqController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PortfolioController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ServiceController;
@@ -62,6 +65,11 @@ Route::prefix('v1')->group(function () {
         Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
         Route::put('/auth/profile/password', [AuthController::class, 'updatePassword']);
         Route::post('/auth/email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:6,1');
+
+        Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1');
+
+        Route::get('/orders', [OrderController::class, 'index']);
+        Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
     });
 
     // Admin (protected)
@@ -85,5 +93,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/settings', [AdminSiteSettingController::class, 'index']);
         Route::put('/settings', [AdminSiteSettingController::class, 'update']);
+
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::get('/orders/{orderNumber}', [AdminOrderController::class, 'show']);
     });
 });

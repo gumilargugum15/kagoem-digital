@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 export default function Cart() {
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: getSettings });
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: cart, isLoading } = useQuery({ queryKey: ["cart"], queryFn: getCart });
 
@@ -41,7 +42,7 @@ export default function Cart() {
   });
 
   const handleCheckout = () => {
-    toast.info("Fitur checkout akan segera tersedia.");
+    navigate("/checkout");
   };
 
   const items = cart?.items ?? [];
