@@ -23,7 +23,7 @@ class OrderController extends Controller
     public function show(string $orderNumber): JsonResponse
     {
         $order = Order::where('order_number', $orderNumber)
-            ->with(['user:id,name,email', 'items', 'payment'])
+            ->with(['user:id,name,email', 'items.subscription', 'items.digitalAccess', 'payment'])
             ->firstOrFail();
 
         return $this->success($order);

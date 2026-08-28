@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Notifications\PaymentSuccessNotification;
 use App\Services\MidtransService;
+use App\Services\OrderFulfillmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,10 @@ use Illuminate\Support\Facades\Log;
 
 class MidtransNotificationController extends Controller
 {
-    public function __construct(private readonly MidtransService $midtrans) {}
+    public function __construct(
+        private readonly MidtransService $midtrans,
+        private readonly OrderFulfillmentService $fulfillment,
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -126,6 +130,10 @@ class MidtransNotificationController extends Controller
         ]);
 
         $order->update(['status' => $orderStatus]);
+
+        if ($paymentStatus === PaymentStatus::Paid) {
+            $this->fulfillment->fulfill($order->fresh(['items', 'payment']));
+        }
 
         return $paymentStatus === PaymentStatus::Paid && ! $wasPaid;
     }

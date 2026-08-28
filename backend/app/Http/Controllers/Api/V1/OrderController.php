@@ -31,7 +31,7 @@ class OrderController extends Controller
     {
         $order = Order::where('user_id', $request->user()->id)
             ->where('order_number', $orderNumber)
-            ->with(['items', 'payment'])
+            ->with(['items.subscription', 'items.digitalAccess', 'payment'])
             ->firstOrFail();
 
         return $this->success($order);

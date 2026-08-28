@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ChevronRight, Loader2, LogOut, Package } from "lucide-react";
+import { AlertTriangle, ChevronRight, Loader2, LogOut, Package, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { Nav } from "@/components/nav";
@@ -220,6 +220,24 @@ export default function Account() {
               <div>
                 <p className="font-semibold text-navy">Pesanan Saya</p>
                 <p className="text-sm text-muted-foreground">Lihat riwayat dan status pesanan</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+
+          <Link
+            to="/my-products"
+            className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-soft transition-shadow hover:shadow-elegant"
+          >
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10">
+                <ShoppingBag className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-navy">Produk Saya</p>
+                <p className="text-sm text-muted-foreground">
+                  Subscription aktif dan download produk digital
+                </p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
