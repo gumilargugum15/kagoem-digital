@@ -5,15 +5,8 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { adminGetOrder } from "@/services/orders";
 import { formatCurrency } from "@/lib/utils";
+import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/order-status";
 import { Badge } from "@/components/ui/badge";
-
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: "Menunggu Pembayaran",
-  paid: "Dibayar",
-  failed: "Gagal",
-  cancelled: "Dibatalkan",
-  expired: "Kedaluwarsa",
-};
 
 export default function AdminOrderDetail() {
   const { orderNumber = "" } = useParams<{ orderNumber: string }>();
@@ -83,6 +76,18 @@ export default function AdminOrderDetail() {
               <span>Subtotal</span>
               <span className="text-navy">{formatCurrency(order.subtotal)}</span>
             </div>
+            {Number(order.discount) > 0 && (
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Discount</span>
+                <span className="text-navy">-{formatCurrency(order.discount)}</span>
+              </div>
+            )}
+            {Number(order.tax) > 0 && (
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Tax</span>
+                <span className="text-navy">{formatCurrency(order.tax)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between border-t border-border pt-2 text-base font-bold text-navy">
               <span>Total</span>
               <span>{formatCurrency(order.total)}</span>
@@ -93,7 +98,7 @@ export default function AdminOrderDetail() {
             <div>
               <p className="text-muted-foreground">Payment Status</p>
               <p className="mt-0.5 font-semibold text-navy">
-                {order.payment ? ORDER_STATUS_LABEL[order.payment.status] : "-"}
+                {order.payment ? PAYMENT_STATUS_LABEL[order.payment.status] : "-"}
               </p>
             </div>
             <div>

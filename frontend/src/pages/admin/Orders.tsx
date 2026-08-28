@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { adminGetOrders } from "@/services/orders";
 import { formatCurrency } from "@/lib/utils";
+import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/order-status";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -14,14 +15,6 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: "Menunggu Pembayaran",
-  paid: "Dibayar",
-  failed: "Gagal",
-  cancelled: "Dibatalkan",
-  expired: "Kedaluwarsa",
-};
 
 export default function AdminOrders() {
   const { data, isLoading } = useQuery({
@@ -78,7 +71,7 @@ export default function AdminOrders() {
                       <Badge
                         variant={order.payment?.status === "pending" ? "secondary" : "default"}
                       >
-                        {order.payment ? ORDER_STATUS_LABEL[order.payment.status] : "-"}
+                        {order.payment ? PAYMENT_STATUS_LABEL[order.payment.status] : "-"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">

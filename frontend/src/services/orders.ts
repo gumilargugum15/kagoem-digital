@@ -8,8 +8,19 @@ export function checkout(phone?: string) {
   });
 }
 
-export function getOrders(page = 1) {
-  return apiFetch<PaginatedData<Order>>(`/orders?page=${page}`);
+export interface OrderListParams {
+  page?: number;
+  search?: string;
+  status?: string;
+}
+
+export function getOrders(params: OrderListParams = {}) {
+  const query = new URLSearchParams();
+  if (params.page) query.set("page", String(params.page));
+  if (params.search) query.set("search", params.search);
+  if (params.status && params.status !== "all") query.set("status", params.status);
+  const qs = query.toString();
+  return apiFetch<PaginatedData<Order>>(`/orders${qs ? `?${qs}` : ""}`);
 }
 
 export function getOrder(orderNumber: string) {
