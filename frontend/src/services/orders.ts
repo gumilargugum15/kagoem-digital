@@ -27,6 +27,17 @@ export function getOrder(orderNumber: string) {
   return apiFetch<Order>(`/orders/${orderNumber}`);
 }
 
+export interface CreatePaymentResult {
+  order_number: string;
+  snap_token: string;
+}
+
+export function createPayment(orderNumber: string) {
+  return apiFetch<CreatePaymentResult>(`/orders/${orderNumber}/payment`, {
+    method: "POST",
+  });
+}
+
 export function adminGetOrders(page = 1) {
   return apiFetch<PaginatedData<Order>>(`/admin/orders?page=${page}`);
 }
