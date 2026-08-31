@@ -20,6 +20,7 @@ class UpdateProductRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug,'.$this->route('product')?->id],
             'type' => ['sometimes', 'required', Rule::enum(ProductType::class)],
+            'application_id' => ['nullable', 'integer', 'exists:applications,id'],
             'category' => ['sometimes', 'required', 'string', 'max:100'],
             'short_description' => ['sometimes', 'required', 'string', 'max:500'],
             'description' => ['nullable', 'string'],
