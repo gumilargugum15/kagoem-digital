@@ -21,9 +21,14 @@ use Illuminate\Support\Facades\Log;
  * Every fulfillment write is keyed by order_item_id, which is unique per
  * table — calling fulfill() on the same order twice (e.g. duplicate Midtrans
  * notifications) is a no-op the second time, via firstOrCreate.
+ *
+ * Subscription items additionally trigger Application Provisioning (POS, Inventory, ...).
+ * Digital items never do — only a Subscription implies external application access.
  */
 class OrderFulfillmentService
 {
+    public function __construct(private readonly ApplicationProvisioningService $provisioning) {}
+
     public function fulfill(Order $order): void
     {
         if ($order->status !== OrderStatus::Paid) {
@@ -62,6 +67,8 @@ class OrderFulfillmentService
                 'subscription_id' => $subscription->id,
             ]);
         }
+
+        $this->provisioning->provision($subscription);
     }
 
     private function fulfillDigitalAccess(Order $order, OrderItem $item): void

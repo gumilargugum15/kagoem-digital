@@ -212,6 +212,23 @@ export type PaymentStatus = "pending" | "paid" | "failed" | "cancelled" | "expir
 export type SubscriptionStatus = "pending" | "active" | "expired" | "cancelled";
 export type DigitalAccessStatus = "active" | "revoked";
 
+export type ApplicationStatus = "active" | "inactive";
+export type ProvisioningStatus = "pending" | "processing" | "completed" | "failed";
+
+export interface Application {
+  id: number;
+  name: string;
+  code: string;
+  base_url: string | null;
+  status: ApplicationStatus;
+}
+
+export interface ApplicationProvisioning {
+  id: number;
+  subscription_id: number;
+  status: ProvisioningStatus;
+}
+
 export interface Subscription {
   id: number;
   user_id: number;
@@ -222,7 +239,16 @@ export interface Subscription {
   status: SubscriptionStatus;
   started_at: string | null;
   expires_at: string | null;
-  product?: { id: number; name: string; slug: string; thumbnail: string | null; type: ProductType };
+  product?: {
+    id: number;
+    name: string;
+    slug: string;
+    thumbnail: string | null;
+    type: ProductType;
+    application_id: number | null;
+    application?: Application | null;
+  };
+  provisioning?: ApplicationProvisioning | null;
 }
 
 export interface DigitalProductAccess {

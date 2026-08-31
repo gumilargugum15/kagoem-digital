@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, Download, Loader2, Package, ShoppingBag } from "lucide-react";
+import { AlertCircle, Download, ExternalLink, Loader2, Package, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { Nav } from "@/components/nav";
@@ -89,6 +89,12 @@ export default function MyProducts() {
                     {subscriptions.map((sub) => {
                       const thumbnail = getStorageUrl(sub.product?.thumbnail);
                       const isExpired = sub.status === "expired";
+                      const application = sub.product?.application;
+                      const canOpenApp =
+                        sub.status === "active" &&
+                        sub.provisioning?.status === "completed" &&
+                        Boolean(application?.base_url);
+                      const provisioningFailed = sub.provisioning?.status === "failed";
 
                       return (
                         <div
@@ -124,12 +130,22 @@ export default function MyProducts() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge variant={sub.status === "active" ? "default" : "secondary"}>
-                              {SUBSCRIPTION_STATUS_LABEL[sub.status]}
+                              {provisioningFailed
+                                ? "Provisioning Failed"
+                                : SUBSCRIPTION_STATUS_LABEL[sub.status]}
                             </Badge>
-                            {sub.product?.slug && (
-                              <Button type="button" variant="outline" size="sm" asChild>
-                                <Link to={`/products/${sub.product.slug}`}>Detail</Link>
+                            {canOpenApp && application?.base_url ? (
+                              <Button type="button" size="sm" asChild>
+                                <a href={application.base_url} target="_blank" rel="noreferrer">
+                                  <ExternalLink className="h-4 w-4" /> Buka Aplikasi
+                                </a>
                               </Button>
+                            ) : (
+                              sub.product?.slug && (
+                                <Button type="button" variant="outline" size="sm" asChild>
+                                  <Link to={`/products/${sub.product.slug}`}>Detail</Link>
+                                </Button>
+                              )
                             )}
                           </div>
                         </div>

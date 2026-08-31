@@ -20,6 +20,7 @@ class StoreProductRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug'],
             'type' => ['required', Rule::enum(ProductType::class)],
+            'application_id' => ['nullable', 'integer', 'exists:applications,id'],
             'category' => ['required', 'string', 'max:100'],
             'short_description' => ['required', 'string', 'max:500'],
             'description' => ['nullable', 'string'],

@@ -20,7 +20,11 @@ class MyProductsController extends Controller
         $user = $request->user();
 
         $subscriptions = $user->subscriptions()
-            ->with('product:id,name,slug,thumbnail,type')
+            ->with([
+                'product:id,name,slug,thumbnail,type,application_id',
+                'product.application:id,name,code,base_url,status',
+                'provisioning:id,subscription_id,status',
+            ])
             ->latest()
             ->get();
 

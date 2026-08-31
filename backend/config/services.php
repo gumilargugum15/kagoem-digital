@@ -22,6 +22,11 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'pos' => [
+        'api_url' => env('KAGOEM_POS_API_URL'),
+        'service_token' => env('KAGOEM_POS_SERVICE_TOKEN'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

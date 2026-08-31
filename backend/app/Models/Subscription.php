@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Subscription extends Model
 {
@@ -51,5 +52,19 @@ class Subscription extends Model
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
+    }
+
+    public function provisioning(): HasOne
+    {
+        return $this->hasOne(ApplicationProvisioning::class);
+    }
+
+    /**
+     * The Application this subscription grants access to, derived from its Product —
+     * not stored redundantly on this table.
+     */
+    public function application(): ?Application
+    {
+        return $this->product?->application;
     }
 }
