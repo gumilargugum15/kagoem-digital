@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\ApplicationAccount;
 use App\Models\ApplicationProvisioning;
 use App\Models\Subscription;
+use App\Notifications\PosAccountOnboardingNotification;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -99,6 +100,8 @@ class ApplicationProvisioningService
                 ],
             );
 
+            $this->maybeSendOnboardingEmail($account, $subscription, $application, $result['metadata'] ?? []);
+
             $provisioning->update([
                 'status' => ApplicationProvisioningStatus::Completed,
                 'application_account_id' => $account->id,
@@ -110,6 +113,32 @@ class ApplicationProvisioningService
         } catch (Throwable $e) {
             $this->fail($provisioning, $logContext, $e->getMessage());
         }
+    }
+
+    /**
+     * Send the customer their POS set-password link — but only the one time it's
+     * actually needed: a brand-new ApplicationAccount for a brand-new external user.
+     * Re-provisioning an existing account (retry, re-subscription) or reusing an
+     * owner that already existed on the external side must never re-trigger this,
+     * since either the customer already has working credentials or resending would
+     * silently invalidate a password they already use. See
+     * KAGOEM_POS_CUSTOMER_ONBOARDING_SET_PASSWORD_DESIGN.md §8.
+     */
+    private function maybeSendOnboardingEmail(ApplicationAccount $account, Subscription $subscription, Application $application, array $metadata): void
+    {
+        if (! $account->wasRecentlyCreated) {
+            return;
+        }
+
+        if (($metadata['user_was_created'] ?? false) !== true) {
+            return;
+        }
+
+        if (empty($metadata['set_password_token']) || empty($application->base_url)) {
+            return;
+        }
+
+        $subscription->user->notify(new PosAccountOnboardingNotification($subscription, $application, $metadata));
     }
 
     private function fail(ApplicationProvisioning $provisioning, array $logContext, string $message): void

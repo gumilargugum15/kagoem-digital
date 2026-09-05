@@ -10,6 +10,7 @@ import {
   adminUpdateProduct,
   adminDeleteProduct,
 } from "@/services/products";
+import { adminGetApplications } from "@/services/applications";
 import type { Product, ProductType, ProductStatus, ProductBadge } from "@/types/api";
 import { ApiClientError, getStorageUrl } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ interface ProductFormState {
   status: ProductStatus;
   sort_order: string;
   published_at: string;
+  application_id: string;
 }
 
 interface FeatureRow {
@@ -105,6 +107,7 @@ const emptyForm: ProductFormState = {
   status: "draft",
   sort_order: "0",
   published_at: "",
+  application_id: "none",
 };
 
 function toFormState(p: Product): ProductFormState {
@@ -129,6 +132,7 @@ function toFormState(p: Product): ProductFormState {
     status: p.status,
     sort_order: String(p.sort_order),
     published_at: p.published_at ? p.published_at.slice(0, 10) : "",
+    application_id: p.application_id ? String(p.application_id) : "none",
   };
 }
 
@@ -167,6 +171,7 @@ function buildFormData(
   fd.append("sort_order", form.sort_order || "0");
   fd.append("status", form.status);
   if (form.published_at) fd.append("published_at", form.published_at);
+  if (form.application_id !== "none") fd.append("application_id", form.application_id);
 
   form.tags
     .split(",")
@@ -205,6 +210,10 @@ export default function AdminProducts() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "products"],
     queryFn: adminGetProducts,
+  });
+  const { data: applications } = useQuery({
+    queryKey: ["admin", "applications"],
+    queryFn: adminGetApplications,
   });
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -545,6 +554,30 @@ export default function AdminProducts() {
                       onChange={(e) => setForm((f) => ({ ...f, published_at: e.target.value }))}
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Linked Application</Label>
+                  <Select
+                    value={form.application_id}
+                    onValueChange={(v) => setForm((f) => ({ ...f, application_id: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Tidak ada</SelectItem>
+                      {applications?.map((app) => (
+                        <SelectItem key={app.id} value={String(app.id)}>
+                          {app.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Wajib diisi agar pelanggan bisa melihat tombol "Buka Aplikasi" setelah subscription
+                    aktif.
+                  </p>
                 </div>
               </TabsContent>
 

@@ -138,6 +138,7 @@ export interface Product {
   sort_order: number;
   status: ProductStatus;
   published_at: string | null;
+  application_id: number | null;
   features?: ProductFeature[];
   plans?: SubscriptionPlan[];
   plans_count?: number;
