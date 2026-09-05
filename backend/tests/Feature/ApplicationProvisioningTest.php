@@ -18,10 +18,12 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Notifications\PosAccountOnboardingNotification;
 use App\Services\ApplicationProvisioningService;
 use App\Services\OrderFulfillmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -80,6 +82,54 @@ class FakeEventuallySucceedingAdapter implements ApplicationProvisioningAdapter
     }
 }
 
+/**
+ * Fails on the first attempt, succeeds afterwards, and reports a brand-new
+ * external user on success — for testing that a retry-then-succeed sends
+ * exactly one onboarding email (from the successful attempt only).
+ */
+class FakeEventuallySucceedingOnboardingAdapter implements ApplicationProvisioningAdapter
+{
+    public static int $attempts = 0;
+
+    public function provision(User $user, Subscription $subscription): array
+    {
+        self::$attempts++;
+
+        if (self::$attempts < 2) {
+            throw new ApplicationProvisioningException('Simulated transient failure.');
+        }
+
+        return [
+            'external_user_id' => 'ext-user-'.$user->id,
+            'external_account_id' => 'ext-account-'.$user->id,
+            'metadata' => [
+                'user_was_created' => true,
+                'set_password_token' => 'raw-token-retry',
+                'set_password_expires_in_minutes' => 1440,
+            ],
+        ];
+    }
+}
+
+/**
+ * Fake adapter with configurable metadata, for testing the
+ * PosAccountOnboardingNotification dispatch gate — see §8 of
+ * KAGOEM_POS_CUSTOMER_ONBOARDING_SET_PASSWORD_DESIGN.md.
+ */
+class FakeOnboardingProvisioningAdapter implements ApplicationProvisioningAdapter
+{
+    public static array $metadata = [];
+
+    public function provision(User $user, Subscription $subscription): array
+    {
+        return [
+            'external_user_id' => 'ext-user-'.$user->id,
+            'external_account_id' => 'ext-account-'.$user->id,
+            'metadata' => self::$metadata,
+        ];
+    }
+}
+
 class ApplicationProvisioningTest extends TestCase
 {
     use RefreshDatabase;
@@ -89,6 +139,8 @@ class ApplicationProvisioningTest extends TestCase
         parent::setUp();
         FakeSucceedingProvisioningAdapter::$calls = [];
         FakeEventuallySucceedingAdapter::$attempts = 0;
+        FakeEventuallySucceedingOnboardingAdapter::$attempts = 0;
+        FakeOnboardingProvisioningAdapter::$metadata = [];
     }
 
     private function application(string $code, array $overrides = []): Application
@@ -479,5 +531,149 @@ class ApplicationProvisioningTest extends TestCase
         );
 
         $this->assertNull($matching, 'No route should exist for triggering application provisioning directly.');
+    }
+
+    // TEST 15: Brand-new external user -> onboarding set-password email is sent.
+    public function test_onboarding_email_sent_for_brand_new_external_user(): void
+    {
+        config(['application_provisioning.adapters.fake-app' => FakeOnboardingProvisioningAdapter::class]);
+        FakeOnboardingProvisioningAdapter::$metadata = [
+            'user_was_created' => true,
+            'set_password_token' => 'raw-token-123',
+            'set_password_expires_in_minutes' => 1440,
+        ];
+        Notification::fake();
+        $app = $this->application('fake-app', ['base_url' => 'https://pos.example.test']);
+        $user = User::factory()->create();
+        $product = $this->subscriptionProduct($app);
+        $order = $this->paidOrderWithSubscriptionItem($user, $product);
+        $subscription = $this->makeSubscription($user, $product, $order);
+
+        app(ApplicationProvisioningService::class)->provision($subscription);
+
+        Notification::assertSentTo(
+            $user,
+            PosAccountOnboardingNotification::class,
+            function (PosAccountOnboardingNotification $notification) use ($user) {
+                $mail = $notification->toMail($user);
+                $url = $mail->viewData['setPasswordUrl'];
+
+                return str_starts_with($url, 'https://pos.example.test/set-password?')
+                    && str_contains($url, 'token=raw-token-123')
+                    && str_contains($url, 'email='.urlencode($user->email));
+            }
+        );
+    }
+
+    // TEST 16: External user already existed (reused owner) -> no onboarding email
+    // (it would silently reset a password the person already uses).
+    public function test_onboarding_email_not_sent_when_external_user_already_existed(): void
+    {
+        config(['application_provisioning.adapters.fake-app' => FakeOnboardingProvisioningAdapter::class]);
+        FakeOnboardingProvisioningAdapter::$metadata = [
+            'user_was_created' => false,
+            'set_password_token' => 'raw-token-123',
+            'set_password_expires_in_minutes' => 1440,
+        ];
+        Notification::fake();
+        $app = $this->application('fake-app');
+        $user = User::factory()->create();
+        $product = $this->subscriptionProduct($app);
+        $order = $this->paidOrderWithSubscriptionItem($user, $product);
+        $subscription = $this->makeSubscription($user, $product, $order);
+
+        app(ApplicationProvisioningService::class)->provision($subscription);
+
+        Notification::assertNotSentTo($user, PosAccountOnboardingNotification::class);
+    }
+
+    // TEST 17: Adapter response with no set_password_token at all (e.g. a future,
+    // non-POS application) -> no onboarding email, no error.
+    public function test_onboarding_email_not_sent_without_a_set_password_token(): void
+    {
+        config(['application_provisioning.adapters.fake-app' => FakeSucceedingProvisioningAdapter::class]);
+        Notification::fake();
+        $app = $this->application('fake-app');
+        $user = User::factory()->create();
+        $product = $this->subscriptionProduct($app);
+        $order = $this->paidOrderWithSubscriptionItem($user, $product);
+        $subscription = $this->makeSubscription($user, $product, $order);
+
+        app(ApplicationProvisioningService::class)->provision($subscription);
+
+        Notification::assertNotSentTo($user, PosAccountOnboardingNotification::class);
+    }
+
+    // TEST 18: First attempt fails, retry succeeds -> exactly one onboarding email,
+    // from the successful attempt only.
+    public function test_onboarding_email_sent_exactly_once_after_retry_succeeds(): void
+    {
+        config(['application_provisioning.adapters.fake-app' => FakeEventuallySucceedingOnboardingAdapter::class]);
+        Notification::fake();
+        $app = $this->application('fake-app');
+        $user = User::factory()->create();
+        $product = $this->subscriptionProduct($app);
+        $order = $this->paidOrderWithSubscriptionItem($user, $product);
+        $subscription = $this->makeSubscription($user, $product, $order);
+
+        $service = app(ApplicationProvisioningService::class);
+        $service->provision($subscription);
+        $provisioning = ApplicationProvisioning::where('subscription_id', $subscription->id)->first();
+        $service->retry($provisioning);
+
+        Notification::assertSentToTimes($user, PosAccountOnboardingNotification::class, 1);
+    }
+
+    // TEST 19: Re-subscription reusing an already-provisioned ApplicationAccount ->
+    // no second onboarding email, even if the adapter reports user_was_created again.
+    public function test_onboarding_email_not_resent_when_account_already_existed(): void
+    {
+        config(['application_provisioning.adapters.fake-app' => FakeOnboardingProvisioningAdapter::class]);
+        FakeOnboardingProvisioningAdapter::$metadata = [
+            'user_was_created' => true,
+            'set_password_token' => 'raw-token-123',
+            'set_password_expires_in_minutes' => 1440,
+        ];
+        Notification::fake();
+        $app = $this->application('fake-app');
+        $user = User::factory()->create();
+        $productA = $this->subscriptionProduct($app, ['name' => 'Plan A']);
+        $productB = $this->subscriptionProduct($app, ['name' => 'Plan B']);
+        $orderA = $this->paidOrderWithSubscriptionItem($user, $productA);
+        $orderB = $this->paidOrderWithSubscriptionItem($user, $productB);
+        $subA = $this->makeSubscription($user, $productA, $orderA);
+        $subB = $this->makeSubscription($user, $productB, $orderB);
+
+        $service = app(ApplicationProvisioningService::class);
+        $service->provision($subA);
+        $service->provision($subB);
+
+        Notification::assertSentToTimes($user, PosAccountOnboardingNotification::class, 1);
+    }
+
+    // TEST 20: Application has no base_url configured -> no onboarding email
+    // (there would be nothing to link to), and provisioning still completes.
+    public function test_onboarding_email_not_sent_when_application_has_no_base_url(): void
+    {
+        config(['application_provisioning.adapters.fake-app' => FakeOnboardingProvisioningAdapter::class]);
+        FakeOnboardingProvisioningAdapter::$metadata = [
+            'user_was_created' => true,
+            'set_password_token' => 'raw-token-123',
+            'set_password_expires_in_minutes' => 1440,
+        ];
+        Notification::fake();
+        $app = $this->application('fake-app', ['base_url' => null]);
+        $user = User::factory()->create();
+        $product = $this->subscriptionProduct($app);
+        $order = $this->paidOrderWithSubscriptionItem($user, $product);
+        $subscription = $this->makeSubscription($user, $product, $order);
+
+        app(ApplicationProvisioningService::class)->provision($subscription);
+
+        $this->assertDatabaseHas('application_provisionings', [
+            'subscription_id' => $subscription->id,
+            'status' => 'completed',
+        ]);
+        Notification::assertNotSentTo($user, PosAccountOnboardingNotification::class);
     }
 }

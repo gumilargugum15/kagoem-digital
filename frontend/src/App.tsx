@@ -24,6 +24,7 @@ import AdminServices from "@/pages/admin/Services";
 import AdminPortfolio from "@/pages/admin/Portfolio";
 import AdminTechNotes from "@/pages/admin/TechNotes";
 import AdminProducts from "@/pages/admin/Products";
+import AdminApplications from "@/pages/admin/Applications";
 import AdminProductPlans from "@/pages/admin/ProductPlans";
 import AdminFaq from "@/pages/admin/Faq";
 import AdminMessages from "@/pages/admin/Messages";
@@ -100,6 +101,7 @@ export function App() {
       <Route path="/admin/tech-notes" element={<AdminTechNotes />} />
       <Route path="/admin/products" element={<AdminProducts />} />
       <Route path="/admin/products/:id/plans" element={<AdminProductPlans />} />
+      <Route path="/admin/applications" element={<AdminApplications />} />
       <Route path="/admin/faq" element={<AdminFaq />} />
       <Route path="/admin/messages" element={<AdminMessages />} />
       <Route path="/admin/settings" element={<AdminSettings />} />

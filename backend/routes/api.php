@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\ApplicationController as AdminApplicationController;
 use App\Http\Controllers\Api\V1\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\FaqController as AdminFaqController;
@@ -90,6 +91,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('faqs', AdminFaqController::class);
         Route::apiResource('tech-notes', AdminTechNoteController::class);
         Route::apiResource('products', AdminProductController::class);
+        Route::apiResource('applications', AdminApplicationController::class)->except(['destroy']);
         Route::post('/products/{product}/plans', [AdminSubscriptionPlanController::class, 'store']);
         Route::get('/products/{product}/plans', [AdminSubscriptionPlanController::class, 'index']);
         Route::put('/products/{product}/plans/{plan}', [AdminSubscriptionPlanController::class, 'update']);
